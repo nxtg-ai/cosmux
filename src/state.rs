@@ -56,8 +56,9 @@ pub fn load() -> Result<StateFile> {
 
 pub fn save(state: &StateFile) -> Result<()> {
     std::fs::create_dir_all(state_dir())?;
-    let raw = serde_json::to_string_pretty(state)
-        .map_err(|e| crate::error::CosmuxError::Other(anyhow::anyhow!("state.json serialize: {e}")))?;
+    let raw = serde_json::to_string_pretty(state).map_err(|e| {
+        crate::error::CosmuxError::Other(anyhow::anyhow!("state.json serialize: {e}"))
+    })?;
     std::fs::write(state_path(), raw)?;
     Ok(())
 }

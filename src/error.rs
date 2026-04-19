@@ -28,6 +28,8 @@ pub enum CosmuxError {
     #[error("hook failed: {hook} — {reason}")]
     HookFailed { hook: String, reason: String },
 
+    // Reserved for the planned strict-template mode (Phase 3).
+    #[allow(dead_code)]
     #[error("template not found: {0}")]
     TemplateNotFound(String),
 

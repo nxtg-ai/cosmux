@@ -64,10 +64,18 @@ enum Commands {
     #[command(about = "Print HUD state.json path + contents", alias = "hud")]
     State,
 
-    #[command(name = "_pane-recover", hide = true, about = "(internal) tmux pane-died handler")]
+    #[command(
+        name = "_pane-recover",
+        hide = true,
+        about = "(internal) tmux pane-died handler"
+    )]
     PaneRecover { session: String },
 
-    #[command(name = "_after-detach", hide = true, about = "(internal) tmux client-detached handler")]
+    #[command(
+        name = "_after-detach",
+        hide = true,
+        about = "(internal) tmux client-detached handler"
+    )]
     AfterDetach { session: String },
 }
 
@@ -191,9 +199,7 @@ fn cmd_show(name_or_path: &str) -> Result<()> {
 
 fn attach_to(name: &str) -> Result<()> {
     use std::process::Command;
-    let status = Command::new("tmux")
-        .args(["attach", "-t", name])
-        .status()?;
+    let status = Command::new("tmux").args(["attach", "-t", name]).status()?;
     if !status.success() {
         return Err(CosmuxError::TmuxFailed {
             cmd: format!("tmux attach -t {name}"),

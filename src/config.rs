@@ -66,8 +66,10 @@ impl PodConfig {
             return Err(CosmuxError::ConfigNotFound(path_str));
         }
         let raw = std::fs::read_to_string(path_ref)?;
-        let cfg: PodConfig = serde_yaml::from_str(&raw)
-            .map_err(|e| CosmuxError::InvalidYaml { path: path_str, source: e })?;
+        let cfg: PodConfig = serde_yaml::from_str(&raw).map_err(|e| CosmuxError::InvalidYaml {
+            path: path_str,
+            source: e,
+        })?;
         cfg.validate()?;
         Ok(cfg)
     }
@@ -112,8 +114,18 @@ pub fn expand_path<S: AsRef<str>>(s: S) -> PathBuf {
 pub fn config_search_paths(name: &str) -> Vec<PathBuf> {
     let mut paths = Vec::new();
     if let Some(home) = dirs_home() {
-        paths.push(home.join("ASIF").join("infra").join("tmux").join(format!("{name}.yaml")));
-        paths.push(home.join(".config").join("cosmux").join("pods").join(format!("{name}.yaml")));
+        paths.push(
+            home.join("ASIF")
+                .join("infra")
+                .join("tmux")
+                .join(format!("{name}.yaml")),
+        );
+        paths.push(
+            home.join(".config")
+                .join("cosmux")
+                .join("pods")
+                .join(format!("{name}.yaml")),
+        );
     }
     paths.push(PathBuf::from(format!("./{name}.yaml")));
     paths

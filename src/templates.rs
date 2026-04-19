@@ -12,7 +12,12 @@ pub struct PaneTemplate {
 }
 
 pub fn template_dir() -> Option<PathBuf> {
-    std::env::var_os("HOME").map(|h| PathBuf::from(h).join(".config").join("cosmux").join("templates"))
+    std::env::var_os("HOME").map(|h| {
+        PathBuf::from(h)
+            .join(".config")
+            .join("cosmux")
+            .join("templates")
+    })
 }
 
 pub fn load_template(name: &str) -> Result<Option<PaneTemplate>> {
@@ -24,8 +29,11 @@ pub fn load_template(name: &str) -> Result<Option<PaneTemplate>> {
         return Ok(None);
     }
     let raw = std::fs::read_to_string(&path)?;
-    let tpl: PaneTemplate = serde_yaml::from_str(&raw)
-        .map_err(|e| crate::error::CosmuxError::InvalidYaml { path: path.display().to_string(), source: e })?;
+    let tpl: PaneTemplate =
+        serde_yaml::from_str(&raw).map_err(|e| crate::error::CosmuxError::InvalidYaml {
+            path: path.display().to_string(),
+            source: e,
+        })?;
     Ok(Some(tpl))
 }
 

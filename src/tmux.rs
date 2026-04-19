@@ -16,14 +16,15 @@ impl Tmux {
 
     pub fn run(args: &[&str]) -> Result<Output> {
         log::debug!("tmux {}", args.join(" "));
-        let out = Command::new("tmux")
-            .args(args)
-            .output()
-            .map_err(|e| CosmuxError::TmuxFailed {
-                cmd: format!("tmux {}", args.join(" ")),
-                code: -1,
-                stderr: e.to_string(),
-            })?;
+        let out =
+            Command::new("tmux")
+                .args(args)
+                .output()
+                .map_err(|e| CosmuxError::TmuxFailed {
+                    cmd: format!("tmux {}", args.join(" ")),
+                    code: -1,
+                    stderr: e.to_string(),
+                })?;
         if !out.status.success() {
             return Err(CosmuxError::TmuxFailed {
                 cmd: format!("tmux {}", args.join(" ")),
@@ -149,8 +150,8 @@ impl<'a> PodSpawner<'a> {
         // pane-died hook: invoke `cosmux _pane-recover <session>` which reads state.json
         // and re-spawns the dead pane with original cwd + command.
         if !self.pod.on_pane_dead.is_empty() {
-            let exe = std::env::current_exe()
-                .unwrap_or_else(|_| std::path::PathBuf::from("cosmux"));
+            let exe =
+                std::env::current_exe().unwrap_or_else(|_| std::path::PathBuf::from("cosmux"));
             let cmd = format!(
                 "run-shell '{} _pane-recover {} >> /tmp/cosmux-{}.log 2>&1'",
                 exe.display(),
@@ -163,8 +164,8 @@ impl<'a> PodSpawner<'a> {
             let _ = Tmux::run(&["set-option", "-t", session, "remain-on-exit", "on"]);
         }
         if !self.pod.after_detach.is_empty() {
-            let exe = std::env::current_exe()
-                .unwrap_or_else(|_| std::path::PathBuf::from("cosmux"));
+            let exe =
+                std::env::current_exe().unwrap_or_else(|_| std::path::PathBuf::from("cosmux"));
             let cmd = format!(
                 "run-shell '{} _after-detach {} >> /tmp/cosmux-{}.log 2>&1'",
                 exe.display(),
@@ -177,10 +178,9 @@ impl<'a> PodSpawner<'a> {
     }
 
     fn spawn_window(&self, window: &Window, pod_root: Option<&PathBuf>) -> Result<()> {
-        let first_pane = window
-            .panes
-            .first()
-            .ok_or_else(|| CosmuxError::InvalidConfig(format!("window '{}' has no panes", window.name)))?;
+        let first_pane = window.panes.first().ok_or_else(|| {
+            CosmuxError::InvalidConfig(format!("window '{}' has no panes", window.name))
+        })?;
         let first_cwd = resolve_cwd(first_pane, pod_root);
         let target_session = format!("{}:", self.pod.name);
 

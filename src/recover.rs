@@ -40,21 +40,16 @@ pub fn pane_recover(session: &str) -> Result<()> {
         // We re-key by ordinal position within the window.
         let panes_sorted: Vec<&state::PaneState> = window.panes.iter().collect();
         // best-effort: use min(pane_index-1, 0) mapping
-        let want_idx = pane_index.saturating_sub(1).min(panes_sorted.len().saturating_sub(1));
+        let want_idx = pane_index
+            .saturating_sub(1)
+            .min(panes_sorted.len().saturating_sub(1));
         let Some(pane_record) = panes_sorted.get(want_idx) else {
             continue;
         };
 
         let target = format!("{session}:{window_name}.{pane_index}");
         // respawn-pane reuses the dead pane slot
-        let _ = Tmux::run(&[
-            "respawn-pane",
-            "-k",
-            "-t",
-            &target,
-            "-c",
-            &pane_record.cwd,
-        ]);
+        let _ = Tmux::run(&["respawn-pane", "-k", "-t", &target, "-c", &pane_record.cwd]);
         if !pane_record.command.is_empty() {
             let _ = Tmux::run(&["send-keys", "-t", &target, &pane_record.command, "Enter"]);
         }
