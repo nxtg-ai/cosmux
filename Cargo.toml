@@ -1,0 +1,34 @@
+[package]
+name = "cosmux"
+version = "0.1.0"
+edition = "2021"
+authors = ["NXTG AI <support@nxtg.ai>"]
+license = "Apache-2.0"
+description = "CoS-aware tmux pod manager — declarative YAML, lifecycle hooks"
+repository = "https://github.com/nxtg-ai/cosmux"
+homepage = "https://github.com/nxtg-ai/cosmux"
+documentation = "https://github.com/nxtg-ai/cosmux"
+readme = "README.md"
+keywords = ["tmux", "session-manager", "pod", "yaml", "devops"]
+categories = ["command-line-utilities", "development-tools"]
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_yaml = "0.9"
+anyhow = "1"
+thiserror = "1"
+shell-words = "1"
+log = "0.4"
+env_logger = "0.11"
+shellexpand = "3"
+
+[dev-dependencies]
+assert_cmd = "2"
+tempfile = "3"
+predicates = "3"
+
+[profile.release]
+strip = true
+lto = true
+codegen-units = 1
