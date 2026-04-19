@@ -2,6 +2,24 @@
 
 All notable changes to cosmux are documented here. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [SemVer](https://semver.org/).
 
+## [0.3.0] — 2026-04-19
+
+Phase 3 — Dogfood polish. cosmux now governs the live NXTG-AI portfolio
+(Forge, WORKSTREAMS, Dx3_Program — all migrated from legacy tmux + 27-pane mess).
+
+### Added
+- `cosmux ps` — lists only cosmux-managed pods with status (alive/stale) and source path.
+  `cosmux list` still shows ALL tmux sessions; `ps` is the managed-only view.
+- `cosmux gc` — prunes state.json entries whose tmux session no longer exists.
+  Useful after manual `tmux kill-session` or sandbox cleanup.
+
+### Migration notes
+- Live portfolio cutover completed Sun 2026-04-19 PDT: 3 legacy sessions
+  (Forge, WORKSTREAMS, Dx3_Program) replaced by cosmux-managed equivalents.
+  Pod YAMLs at `~/ASIF/infra/tmux/*.yaml` mirror existing heartbeat target
+  topology (zero heartbeat config changes required for cutover).
+- Stale sessions (FPW, haiku-overclock) killed during migration.
+
 ## [0.2.0] — 2026-04-19
 
 Phase 2 — Full hook lifecycle, HUD state, hidden recovery commands.

@@ -64,6 +64,12 @@ enum Commands {
     #[command(about = "Print HUD state.json path + contents", alias = "hud")]
     State,
 
+    #[command(about = "List cosmux-managed pods only (vs `list` which shows all tmux sessions)")]
+    Ps,
+
+    #[command(about = "Garbage-collect state.json: drop entries whose tmux session no longer exists")]
+    Gc,
+
     #[command(
         name = "_pane-recover",
         hide = true,
@@ -90,6 +96,8 @@ fn main() {
         Commands::Validate { pod } => cmd_validate(pod),
         Commands::Show { pod } => cmd_show(pod),
         Commands::State => cmd_state(),
+        Commands::Ps => cmd_ps(),
+        Commands::Gc => cmd_gc(),
         Commands::PaneRecover { session } => recover::pane_recover(session),
         Commands::AfterDetach { session } => recover::after_detach(session),
     };
@@ -160,6 +168,42 @@ fn cmd_state() -> Result<()> {
     let raw = serde_json::to_string_pretty(&s)
         .map_err(|e| CosmuxError::Other(anyhow::anyhow!("state pretty: {e}")))?;
     println!("{raw}");
+    Ok(())
+}
+
+fn cmd_ps() -> Result<()> {
+    let s = state::load()?;
+    if s.pods.is_empty() {
+        println!("no cosmux pods recorded — run `cosmux start <pod>` to spawn one");
+        return Ok(());
+    }
+    let mut alive = 0usize;
+    let mut stale = 0usize;
+    println!("{:<24}  {:<8}  {:<22}  source", "POD", "STATUS", "STARTED");
+    for (name, pod) in &s.pods {
+        let status = if Tmux::session_exists(name) {
+            alive += 1;
+            "alive"
+        } else {
+            stale += 1;
+            "stale"
+        };
+        println!(
+            "{:<24}  {:<8}  {:<22}  {}",
+            name, status, pod.started_at, pod.source_path
+        );
+    }
+    println!("\n{} alive, {} stale (run `cosmux gc` to prune stale)", alive, stale);
+    Ok(())
+}
+
+fn cmd_gc() -> Result<()> {
+    let mut s = state::load()?;
+    let before = s.pods.len();
+    s.pods.retain(|name, _| Tmux::session_exists(name));
+    let removed = before - s.pods.len();
+    state::save(&s)?;
+    println!("gc: removed {removed} stale entries, {} pods remain", s.pods.len());
     Ok(())
 }
 
