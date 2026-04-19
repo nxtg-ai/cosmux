@@ -139,6 +139,40 @@ impl<'a> PodSpawner<'a> {
             self.spawn_window(window, pod_root.as_ref())?;
         }
 
+        self.install_session_hooks()?;
+
+        Ok(())
+    }
+
+    fn install_session_hooks(&self) -> Result<()> {
+        let session = &self.pod.name;
+        // pane-died hook: invoke `cosmux _pane-recover <session>` which reads state.json
+        // and re-spawns the dead pane with original cwd + command.
+        if !self.pod.on_pane_dead.is_empty() {
+            let exe = std::env::current_exe()
+                .unwrap_or_else(|_| std::path::PathBuf::from("cosmux"));
+            let cmd = format!(
+                "run-shell '{} _pane-recover {} >> /tmp/cosmux-{}.log 2>&1'",
+                exe.display(),
+                session,
+                session
+            );
+            // best-effort — older tmux versions may not have pane-died as a hook target
+            let _ = Tmux::run(&["set-hook", "-t", session, "pane-died", &cmd]);
+            // Keep the pane around so we can detect it (not auto-close)
+            let _ = Tmux::run(&["set-option", "-t", session, "remain-on-exit", "on"]);
+        }
+        if !self.pod.after_detach.is_empty() {
+            let exe = std::env::current_exe()
+                .unwrap_or_else(|_| std::path::PathBuf::from("cosmux"));
+            let cmd = format!(
+                "run-shell '{} _after-detach {} >> /tmp/cosmux-{}.log 2>&1'",
+                exe.display(),
+                session,
+                session
+            );
+            let _ = Tmux::run(&["set-hook", "-t", session, "client-detached", &cmd]);
+        }
         Ok(())
     }
 

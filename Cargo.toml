@@ -1,6 +1,6 @@
 [package]
 name = "cosmux"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 authors = ["NXTG AI <support@nxtg.ai>"]
 license = "Apache-2.0"
@@ -15,6 +15,7 @@ categories = ["command-line-utilities", "development-tools"]
 [dependencies]
 clap = { version = "4", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }
+serde_json = "1"
 serde_yaml = "0.9"
 anyhow = "1"
 thiserror = "1"

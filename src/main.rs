@@ -1,6 +1,8 @@
 mod config;
 mod error;
 mod hooks;
+mod recover;
+mod state;
 mod templates;
 mod tmux;
 
@@ -58,6 +60,15 @@ enum Commands {
         #[arg(help = "Pod name or path to YAML config")]
         pod: String,
     },
+
+    #[command(about = "Print HUD state.json path + contents", alias = "hud")]
+    State,
+
+    #[command(name = "_pane-recover", hide = true, about = "(internal) tmux pane-died handler")]
+    PaneRecover { session: String },
+
+    #[command(name = "_after-detach", hide = true, about = "(internal) tmux client-detached handler")]
+    AfterDetach { session: String },
 }
 
 fn main() {
@@ -70,6 +81,9 @@ fn main() {
         Commands::List => cmd_list(),
         Commands::Validate { pod } => cmd_validate(pod),
         Commands::Show { pod } => cmd_show(pod),
+        Commands::State => cmd_state(),
+        Commands::PaneRecover { session } => recover::pane_recover(session),
+        Commands::AfterDetach { session } => recover::after_detach(session),
     };
 
     if let Err(e) = result {
@@ -95,12 +109,17 @@ fn load_pod(name_or_path: &str) -> Result<PodConfig> {
 
 fn cmd_start(name_or_path: &str, force: bool, attach: bool) -> Result<()> {
     let pod = load_pod(name_or_path)?;
+    let source_path = config::resolve_pod_path(name_or_path)?;
     log::info!("starting pod '{}'", pod.name);
 
     run_hooks(HookKind::BeforeStart, &pod.before_start, &pod.name)?;
 
     let spawner = PodSpawner::new(&pod, force);
     spawner.spawn()?;
+
+    if let Err(e) = state::record_spawn(&pod, &source_path) {
+        log::warn!("state.json write failed: {e}");
+    }
 
     run_hooks(HookKind::AfterStart, &pod.after_start, &pod.name)?;
 
@@ -117,10 +136,22 @@ fn cmd_start(name_or_path: &str, force: bool, attach: bool) -> Result<()> {
 fn cmd_stop(name: &str) -> Result<()> {
     if !Tmux::session_exists(name) {
         println!("pod '{name}' is not running");
+        let _ = state::record_stop(name);
         return Ok(());
     }
     Tmux::kill_session(name)?;
+    let _ = state::record_stop(name);
     println!("pod '{name}' stopped");
+    Ok(())
+}
+
+fn cmd_state() -> Result<()> {
+    let path = state::state_path();
+    println!("state file: {}", path.display());
+    let s = state::load()?;
+    let raw = serde_json::to_string_pretty(&s)
+        .map_err(|e| CosmuxError::Other(anyhow::anyhow!("state pretty: {e}")))?;
+    println!("{raw}");
     Ok(())
 }
 
