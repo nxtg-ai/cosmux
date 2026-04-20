@@ -70,6 +70,14 @@ enum Commands {
     #[command(about = "Garbage-collect state.json: drop entries whose tmux session no longer exists")]
     Gc,
 
+    #[command(about = "Reload a pod (stop + start). Re-reads YAML; loses claude conversation context.")]
+    Reload {
+        #[arg(help = "Pod name (matches tmux session name)")]
+        pod: String,
+        #[arg(long, help = "Attach to the session after reload")]
+        attach: bool,
+    },
+
     #[command(
         name = "_pane-recover",
         hide = true,
@@ -98,6 +106,7 @@ fn main() {
         Commands::State => cmd_state(),
         Commands::Ps => cmd_ps(),
         Commands::Gc => cmd_gc(),
+        Commands::Reload { pod, attach } => cmd_reload(pod, *attach),
         Commands::PaneRecover { session } => recover::pane_recover(session),
         Commands::AfterDetach { session } => recover::after_detach(session),
     };
@@ -205,6 +214,23 @@ fn cmd_gc() -> Result<()> {
     state::save(&s)?;
     println!("gc: removed {removed} stale entries, {} pods remain", s.pods.len());
     Ok(())
+}
+
+fn cmd_reload(name_or_path: &str, attach: bool) -> Result<()> {
+    // Reload = stop + start. Re-reads YAML so config edits take effect.
+    // KILLS the running session — claude conversations in pod panes lose interactive
+    // state (visible scrollback only persists if user captured it). For
+    // context-preserving reload, wait for v0.5 (per-pane diff-aware respawn).
+    let pod = load_pod(name_or_path)?;
+    let session_name = pod.name.clone();
+    if Tmux::session_exists(&session_name) {
+        log::info!("reload: stopping '{}'", session_name);
+        Tmux::kill_session(&session_name)?;
+        let _ = state::record_stop(&session_name);
+    } else {
+        log::info!("reload: '{}' was not running, treating as fresh start", session_name);
+    }
+    cmd_start(name_or_path, false, attach)
 }
 
 fn cmd_list() -> Result<()> {

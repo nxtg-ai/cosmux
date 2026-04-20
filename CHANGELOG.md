@@ -2,6 +2,22 @@
 
 All notable changes to cosmux are documented here. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [SemVer](https://semver.org/).
 
+## [0.4.0] — 2026-04-19
+
+Phase 4 — `cosmux reload` for one-shot config refresh + 7 integration tests.
+
+### Added
+- `cosmux reload <pod>` — stop + start in one call. Re-reads YAML so config edits
+  take effect. Includes `--attach` to attach after reload.
+- `tests/config_test.rs` — 7 integration tests covering validate/show happy +
+  error paths (closes the v0.3 "0 tests" CI signal gap).
+
+### Notes
+- Reload KILLS the running session. Claude conversations in pod panes lose
+  interactive state. v0.5 is planned to add per-pane diff-aware respawn that
+  only restarts panes whose YAML actually changed.
+- All tests pass on release build (~30 ms total).
+
 ## [0.3.0] — 2026-04-19
 
 Phase 3 — Dogfood polish. cosmux now governs the live NXTG-AI portfolio
