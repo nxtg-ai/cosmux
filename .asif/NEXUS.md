@@ -25,7 +25,7 @@
 | N-12 | v1.0 prep — Show HN + Reddit + LinkedIn + Twitter drafts | LAUNCH | DRAFT | P1 | 2026-04-19 |
 | N-13 | v1.0 — `cargo publish` to crates.io (name `cosmux` available) | DISTRIBUTION | PENDING-ASIF | P1 | 2026-04-19 |
 | N-14 | v1.0 — `awesome-tmux` PR | LAUNCH | PENDING | P2 | -- |
-| N-15 | v0.4 — `cosmux reload <pod>` (graceful re-spawn without context loss) | DX | PENDING | P2 | -- |
+| N-15 | v0.4 — `cosmux reload <pod>` (one-shot stop+start config refresh) | DX | SHIPPED | P2 | 2026-04-19 |
 | N-16 | v0.4 — Strict-template mode + template inheritance | TEMPLATES | PENDING | P2 | -- |
 | N-17 | v0.4 — CoS-aware `before_attach`/`after_detach` test coverage | QUALITY | PENDING | P2 | -- |
 
