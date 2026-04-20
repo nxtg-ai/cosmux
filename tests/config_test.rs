@@ -128,6 +128,26 @@ fn missing_pod_returns_clear_error() {
 }
 
 #[test]
+fn completions_emits_bash_function() {
+    cosmux()
+        .args(["completions", "bash"])
+        .assert()
+        .success()
+        .stdout(predicates::str::contains("_cosmux"))
+        .stdout(predicates::str::contains("COMPREPLY"));
+}
+
+#[test]
+fn completions_emits_zsh_function() {
+    cosmux()
+        .args(["completions", "zsh"])
+        .assert()
+        .success()
+        .stdout(predicates::str::contains("_cosmux"))
+        .stdout(predicates::str::contains("compdef"));
+}
+
+#[test]
 fn invalid_yaml_returns_parse_error() {
     let dir = TempDir::new().unwrap();
     let path = write_pod(

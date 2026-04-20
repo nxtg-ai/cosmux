@@ -6,7 +6,8 @@ mod state;
 mod templates;
 mod tmux;
 
-use clap::{Parser, Subcommand};
+use clap::{CommandFactory, Parser, Subcommand};
+use clap_complete::Shell;
 use config::{resolve_pod_path, PodConfig};
 use error::{CosmuxError, Result};
 use hooks::{run_hooks, HookKind};
@@ -78,6 +79,12 @@ enum Commands {
         attach: bool,
     },
 
+    #[command(about = "Print shell completion script (bash | zsh | fish | powershell | elvish)")]
+    Completions {
+        #[arg(value_enum)]
+        shell: Shell,
+    },
+
     #[command(
         name = "_pane-recover",
         hide = true,
@@ -107,6 +114,7 @@ fn main() {
         Commands::Ps => cmd_ps(),
         Commands::Gc => cmd_gc(),
         Commands::Reload { pod, attach } => cmd_reload(pod, *attach),
+        Commands::Completions { shell } => cmd_completions(*shell),
         Commands::PaneRecover { session } => recover::pane_recover(session),
         Commands::AfterDetach { session } => recover::after_detach(session),
     };
@@ -213,6 +221,13 @@ fn cmd_gc() -> Result<()> {
     let removed = before - s.pods.len();
     state::save(&s)?;
     println!("gc: removed {removed} stale entries, {} pods remain", s.pods.len());
+    Ok(())
+}
+
+fn cmd_completions(shell: Shell) -> Result<()> {
+    let mut cmd = Cli::command();
+    let bin = cmd.get_name().to_string();
+    clap_complete::generate(shell, &mut cmd, bin, &mut std::io::stdout());
     Ok(())
 }
 

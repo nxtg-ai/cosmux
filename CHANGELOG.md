@@ -2,6 +2,18 @@
 
 All notable changes to cosmux are documented here. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [SemVer](https://semver.org/).
 
+## [0.4.1] — 2026-04-19
+
+### Added
+- `cosmux completions <shell>` — emits shell completion script. Supports `bash`,
+  `zsh`, `fish`, `powershell`, `elvish`. Install:
+  - bash: `cosmux completions bash | sudo tee /etc/bash_completion.d/cosmux`
+  - zsh:  `cosmux completions zsh > "${fpath[1]}/_cosmux"`
+- 2 new tests covering the bash + zsh completion paths (9 tests total).
+
+### Dependency
+- `clap_complete = "4"` (small, no runtime impact, ~20 KB to release binary).
+
 ## [0.4.0] — 2026-04-19
 
 Phase 4 — `cosmux reload` for one-shot config refresh + 7 integration tests.
