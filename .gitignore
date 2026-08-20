@@ -3,3 +3,7 @@
 Cargo.lock.bak
 .DS_Store
 *.swp
+
+# Private organization operating context
+.asif/
+.claude/
